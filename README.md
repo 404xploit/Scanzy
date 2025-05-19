@@ -26,21 +26,6 @@ A interface gráfica foi desenvolvida em Python utilizando **PyQt5** (ou **Tkint
 
 ---
 
-## 📁 Estrutura do Projeto
-
-port-scanner-gui/
-├── port_scanner_final.sh # Script principal de varredura (Bash)
-├── gui/ # Diretório da interface gráfica (Python)
-│ ├── main.py # Aplicação GUI
-│ └── ui/ # Layouts (PyQt5 .ui ou equivalente)
-├── assets/ # Ícones e imagens (opcional)
-├── requirements.txt # Dependências Python
-├── setup.sh # Script de instalação rápida
-├── README.md # Este arquivo
-└── LICENSE # Licença do projeto
-
----
-
 ## 🖥️ Uso via Terminal (Modo CLI)
 
 ```bash
