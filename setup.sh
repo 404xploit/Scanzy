@@ -2,8 +2,7 @@
 
 echo "🔧 Iniciando setup do ambiente..."
 
-# Verifica se está em um sistema baseado em Debian
-if ! command -v apt &>/dev/null; then
+
   echo "❌ Este script foi feito para distribuições baseadas em Debian (Ubuntu, Kali, etc)."
   echo "ℹ️  Para outras distros, instale manualmente: python3, pip3, netcat, bc, jq, build-essential"
   exit 1
