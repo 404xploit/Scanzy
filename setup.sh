@@ -20,7 +20,7 @@ sudo apt install -y python3 python3-pip python3-dev python3-venv bash netcat bc 
 
 echo "🐍 Criando e ativando ambiente virtual..."
 python3 -m venv .venv
-source .venv/bin/activate
+source $(pwd)/.venv/bin/activate
 
 echo "🐍 Instalando dependências Python do projeto..."
 pip3 install --upgrade pip
@@ -32,4 +32,4 @@ echo "ℹ️ Para executar via terminal:"
 echo "   ./port_scanner_final.sh <alvo> [faixa_de_portas] [opções]"
 echo ""
 echo "🖥️ Para executar a interface gráfica:"
-echo "   source .venv/bin/activate && python3 gui/main.py"
+echo "   source $(pwd)/.venv/bin/activate && python3 gui/main.py"

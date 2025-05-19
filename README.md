@@ -50,25 +50,24 @@ chmod +x port_scanner_final.sh
 ./port_scanner_final.sh 192.168.1.1
 ./port_scanner_final.sh scanme.nmap.org 20-80 --timeout 2 --parallel 20
 ./port_scanner_final.sh example.com 1-1024 --json
+```
 
-````
 ## 🖱️ Uso com Interface Gráfica (Modo GUI)
 
-````bash
+```bash
 # Pré-requisitos:
 sudo apt install python3 python3-pip
 pip3 install -r requirements.txt
 
 # Executar interface:
-python3 gui/main.py
-````
+source $(pwd)/.venv/bin/activate && python3 gui/main.py
+```
 
 ## ⚙️ Instalação Rápida
 
-````bash
+```bash
 ./setup.sh
-
-````
+```
 
 Esse comando instala todas as dependências e prepara o ambiente automaticamente.
 
