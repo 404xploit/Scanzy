@@ -11,7 +11,12 @@ fi
 
 echo "📦 Atualizando pacotes do sistema..."
 sudo apt update -y
-sudo apt install -y python3 python3-pip bash netcat bc jq build-essential
+
+echo "🐍 Removendo instalação atual do Python..."
+sudo apt remove --purge -y python3 python3-pip
+
+echo "🐍 Instalando Python e dependências do sistema..."
+sudo apt install -y python3 python3-pip bash netcat bc jq build-essential python3-dev
 
 echo "🐍 Instalando dependências Python do projeto..."
 pip3 install -r requirements.txt
