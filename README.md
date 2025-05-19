@@ -1,4 +1,4 @@
-# 🔍 Scanzy
+<img width=100% src="https://capsule-render.vercel.app/api?type=waving&height=300&color=gradient&text=🔍%20Scanzy&section=header&reversal=false"/>
 
 Uma ferramenta poderosa para varredura de portas TCP, construída em **Bash** com uma interface gráfica intuitiva em **Python**.
 
@@ -78,11 +78,10 @@ Esse comando instala todas as dependências e prepara o ambiente automaticamente
 
 Este projeto está licenciado sob a MIT License. Consulte o arquivo LICENSE para mais informações.
 
----
 
 # 👥 Autores
 
-Desenvolvido com ❤️ por: 404xploit e Juliana 
+Desenvolvido com ❤️ por: 404xploit e Miranda-SJ
 
 https://github.com/404xploit
 
