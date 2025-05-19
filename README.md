@@ -86,4 +86,5 @@ Este projeto está licenciado sob a MIT License. Consulte o arquivo LICENSE para
 
 👥 Autores
 Desenvolvido com ❤️ por:
-links do perfil aqui
+https://github.com/404xploit
+https://github.com/Miranda-SJ
