@@ -56,8 +56,6 @@ source $(pwd)/.venv/bin/activate && python3 gui/main.py
 
 Esse comando instala todas as dependências e prepara o ambiente automaticamente.
 
----
-
   
 ## 🐧 Sistemas Compatíveis
 
@@ -75,9 +73,6 @@ Esse comando instala todas as dependências e prepara o ambiente automaticamente
 | `macOS (bash ≥ 4 + GNU)` | ⚠️ Funciona com ajustes e ferramentas GNU       |
 
 </div>
-
-
----
 
 ## 📜 Licença
 Este projeto está licenciado sob a MIT License. Consulte o arquivo LICENSE para mais informações.
