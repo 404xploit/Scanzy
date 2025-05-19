@@ -1,4 +1,4 @@
-# 🔍 Port Scanner GUI
+# 🔍 Scanzy
 
 Uma ferramenta poderosa para varredura de portas TCP, construída em **Bash** com uma interface gráfica intuitiva em **Python**.
 
