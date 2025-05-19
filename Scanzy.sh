@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# ProbeX - Scanner de Portas TCP Avançado
+# Scanzy - Scanner de Portas TCP Avançado
 # Autor: 404xploit
 # Data: 15 de Maio de 2025
 # Versão: 1.0
