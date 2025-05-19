@@ -77,26 +77,20 @@ Esse comando instala todas as dependências e prepara o ambiente automaticamente
 ## 🐧 Sistemas Compatíveis
 
 <div align="center">
-  
-Distribuição | Compatibilidade
 
-Ubuntu (18.04+) | ✅ Totalmente compatível
-
-Debian (9+) | ✅ Totalmente compatível
-
-Kali Linux | ✅ Totalmente compatível
-
-Arch Linux / Manjaro | ✅ Totalmente compatível
-
-Fedora / RHEL | ✅ Totalmente compatível
-
-Alpine Linux | ⚠️ Requer instalação extra do bash e coreutils
-
-WSL (Ubuntu/Debian) | ✅ Totalmente compatível
-
-macOS (bash ≥ 4 + GNU) | ⚠️ Funciona com ajustes e ferramentas GNU instaladas
+| Distribuição             | Compatibilidade                                 |
+|--------------------------|-------------------------------------------------|
+| `Ubuntu (18.04+)`        | ✅ Totalmente compatível                        |
+| `Debian (9+)`            | ✅ Totalmente compatível                        |
+| `Kali Linux`             | ✅ Totalmente compatível                        |
+| `Arch Linux / Manjaro`   | ✅ Totalmente compatível                        |
+| `Fedora / RHEL`          | ✅ Totalmente compatível                        |
+| `Alpine Linux`           | ⚠️ Requer instalação extra de bash e coreutils |
+| `WSL (Ubuntu/Debian)`    | ✅ Totalmente compatível                        |
+| `macOS (bash ≥ 4 + GNU)` | ⚠️ Funciona com ajustes e ferramentas GNU       |
 
 </div>
+
 
 ---
 
