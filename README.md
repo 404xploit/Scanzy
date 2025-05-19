@@ -75,6 +75,7 @@ Esse comando instala todas as dependências e prepara o ambiente automaticamente
 </div>
 
 ## 📜 Licença
+
 Este projeto está licenciado sob a MIT License. Consulte o arquivo LICENSE para mais informações.
 
 ---
