@@ -1,9 +1,15 @@
 #!/bin/bash
 
-# Scanzy - Scanner de Portas TCP Avançado
+# port_scanner_final.sh - Scanner de Portas TCP Avançado
 # Autor: 404xploit
 # Data: 15 de Maio de 2025
 # Versão: 1.0
+#
+# Descrição:
+# Este script realiza varredura de portas TCP em um host especificado.
+# Suporta varredura paralela, timeout configurável, saída em formato JSON,
+# detecção básica de serviços, resolução de DNS, fallback para netcat (nc)
+# se /dev/tcp não estiver disponível, e tratamento de interrupção (Ctrl+C).
 #
 # Funcionalidades Principais:
 # 1. Varredura TCP usando /dev/tcp (padrão) ou netcat (fallback ou forçado).
@@ -109,7 +115,7 @@ handle_interrupt() {
 validate_positive_integer() {
     local value="$1"
     local name="$2"
-    local error_message="[!] Erro: $name deve ser um inteiro positivo (recebido: ".$value")."
+    local error_message="[!] Erro: $name deve ser um inteiro positivo (recebido: $value)."
     # Verifica se o valor contém apenas dígitos e é maior que zero.
     if ! [[ "$value" =~ ^[0-9]+$ && "$value" -gt 0 ]]; then
         if $OUTPUT_JSON; then
@@ -166,30 +172,26 @@ parse_ports() {
         exit 1
     elif [[ "$port_range_str" == *"-"* ]]; then # Formato de faixa (ex: 1-1024).
         local start_port end_port
-        start_port=$(echo "$port_range_str" | cut -d
--
- -f1)
-        end_port=$(echo "$port_range_str" | cut -d
--
- -f2)
+        start_port=$(echo "$port_range_str" | cut -d'-' -f1)
+        end_port=$(echo "$port_range_str" | cut -d'-' -f2)
         # Valida se a faixa de portas é numericamente válida e dentro dos limites (1-65535).
         if ! [[ "$start_port" =~ ^[0-9]+$ && "$end_port" =~ ^[0-9]+$ && \
                 "$start_port" -ge 1 && "$start_port" -le 65535 && \
                 "$end_port" -ge 1 && "$end_port" -le 65535 && \
                 "$start_port" -le "$end_port" ]]; then
-            if ! $OUTPUT_JSON; then echo "${error_prefix}Faixa de portas inválida: ".$port_range_str".$ Use INICIO-FIM (1-65535)." >&2; fi
+            if ! $OUTPUT_JSON; then echo "${error_prefix}Faixa de portas inválida: $port_range_str. Use INICIO-FIM (1-65535)." >&2; fi
             exit 1
         fi
         seq "$start_port" "$end_port" # Gera a sequência de portas.
     elif [[ "$port_range_str" =~ ^[0-9]+$ ]]; then # Formato de porta única (ex: 80).
         # Valida se a porta única está dentro dos limites (1-65535).
         if ! [[ "$port_range_str" -ge 1 && "$port_range_str" -le 65535 ]]; then
-            if ! $OUTPUT_JSON; then echo "${error_prefix}Número de porta inválido: ".$port_range_str".$ Deve estar entre 1-65535." >&2; fi
+            if ! $OUTPUT_JSON; then echo "${error_prefix}Número de porta inválido: $port_range_str. Deve estar entre 1-65535." >&2; fi
             exit 1
         fi
         echo "$port_range_str"
     else # Formato desconhecido.
-        if ! $OUTPUT_JSON; then echo "${error_prefix}Formato de faixa de portas desconhecido: ".$port_range_str".$ Use N ou N-M." >&2; fi
+        if ! $OUTPUT_JSON; then echo "${error_prefix}Formato de faixa de portas desconhecido: $port_range_str. Use N ou N-M." >&2; fi
         exit 1
     fi
 }
@@ -302,7 +304,7 @@ PORT_RANGE_INPUT=${PORT_RANGE_RAW:-$DEFAULT_PORT_RANGE}
 TMP_OPEN_PORTS_FILE=$(mktemp)
 # Configura um trap para garantir que o arquivo temporário seja removido na saída do script (normal, erro ou Ctrl+C).
 # O trap para EXIT é executado em qualquer saída, exceto `kill -9`.
-trap "rm -f ".$TMP_OPEN_PORTS_FILE"." EXIT
+trap "rm -f $TMP_OPEN_PORTS_FILE" EXIT
 # Configura um trap para SIGINT (Ctrl+C) e SIGTERM para chamar a função handle_interrupt.
 trap handle_interrupt SIGINT SIGTERM
 
@@ -332,154 +334,161 @@ if $FORCE_USE_NETCAT; then # Se o usuário forçou o uso de netcat.
     fi
 elif ! $DEV_TCP_USABLE; then # Se /dev/tcp não for funcional.
     if ! $OUTPUT_JSON; then echo "[!] Aviso: /dev/tcp parece não estar funcional. Tentando usar netcat como fallback." >&2; fi
-    if command -v nc &>/dev/null; then # Verifica se netcat (nc) está instalado para fallback.
+    if command -v nc &>/dev/null; then # Verifica se netcat (nc) está instalado.
         ACTUAL_SCAN_METHOD="netcat"
     else
-        if ! $OUTPUT_JSON; then echo "[!] Erro: /dev/tcp não funcional e netcat (nc) não encontrado. Impossível escanear." >&2; fi
+        if ! $OUTPUT_JSON; then echo "[!] Erro: /dev/tcp não está funcional e netcat (nc) não foi encontrado." >&2; fi
         exit 1
     fi
 fi
-export ACTUAL_SCAN_METHOD # Exporta para que scan_port_job (em subshells) possa acessá-lo.
+export ACTUAL_SCAN_METHOD # Exporta para que esteja disponível nos subshells dos jobs paralelos.
 
-# --- Resolução de DNS e Preparação do Alvo ---
-IP_FOR_SCANNING="$ORIGINAL_TARGET_HOST" # IP/Host a ser usado na varredura.
-RESOLVED_IP_FOR_JSON=""                # IP resolvido para a saída JSON.
-DISPLAY_NAME_FOR_OUTPUT="$ORIGINAL_TARGET_HOST" # Nome a ser exibido na saída (pode incluir IP resolvido).
-
-# Tenta resolver o hostname para um endereço IP. `getent hosts` pode retornar múltiplos IPs;
-# pegamos o primeiro (geralmente IPv6 se disponível, depois IPv4).
-TEMP_RESOLVED_IP=$(getent hosts "$ORIGINAL_TARGET_HOST" | awk 
-{ print $1 ; exit }
-) # awk para pegar apenas o primeiro IP.
-
-if [ -n "$TEMP_RESOLVED_IP" ]; then
-    IP_FOR_SCANNING="$TEMP_RESOLVED_IP" # Usa o IP resolvido para a varredura.
-    RESOLVED_IP_FOR_JSON="$TEMP_RESOLVED_IP"
-    if [ "$ORIGINAL_TARGET_HOST" != "$TEMP_RESOLVED_IP" ]; then # Se o original era um hostname que foi resolvido.
-        DISPLAY_NAME_FOR_OUTPUT="$ORIGINAL_TARGET_HOST ($TEMP_RESOLVED_IP)"
-    fi
-else # Se a resolução DNS falhou.
-    if ! $OUTPUT_JSON; then echo "[!] Aviso: Não foi possível resolver ".$ORIGINAL_TARGET_HOST".$ Tentando escanear usando ".$ORIGINAL_TARGET_HOST".$ diretamente." >&2; fi
-    # Se o host original já era um IP, usa ele mesmo para o campo "ip" no JSON.
-    if [[ "$ORIGINAL_TARGET_HOST" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ || "$ORIGINAL_TARGET_HOST" =~ ^[0-9a-fA-F:]+$ ]]; then
-         RESOLVED_IP_FOR_JSON="$ORIGINAL_TARGET_HOST"
-    fi
+# --- Resolução de DNS ---
+# Tenta resolver o hostname para um endereço IP.
+# Isso é útil para exibir o endereço IP real que está sendo escaneado.
+TARGET_IP=""
+if command -v dig &>/dev/null; then # Tenta usar dig para resolução de DNS.
+    TARGET_IP=$(dig +short "$ORIGINAL_TARGET_HOST" A | head -n1)
+elif command -v host &>/dev/null; then # Tenta usar host para resolução de DNS.
+    TARGET_IP=$(host -t A "$ORIGINAL_TARGET_HOST" | grep "has address" | head -n1 | awk '{print $NF}')
+elif command -v nslookup &>/dev/null; then # Tenta usar nslookup para resolução de DNS.
+    TARGET_IP=$(nslookup "$ORIGINAL_TARGET_HOST" | grep -A1 "Name:" | grep "Address:" | head -n1 | awk '{print $NF}')
 fi
 
-# --- Início da Varredura ---
-# Exibe informações iniciais da varredura (se não for modo JSON).
-if ! $OUTPUT_JSON ; then
-    echo "[*] Escaneando alvo: $DISPLAY_NAME_FOR_OUTPUT"
+# Se não conseguiu resolver o hostname para um IP, avisa o usuário.
+if [ -z "$TARGET_IP" ]; then
+    if ! $OUTPUT_JSON; then echo "[!] Aviso: Não foi possível resolver $ORIGINAL_TARGET_HOST. Tentando escanear usando $ORIGINAL_TARGET_HOST diretamente." >&2; fi
+    TARGET_IP="$ORIGINAL_TARGET_HOST" # Usa o hostname original como fallback.
+fi
+
+# --- Gerar Lista de Portas para Varredura ---
+# Gera a lista de portas a serem escaneadas usando a função parse_ports.
+# Armazena em um array para uso posterior.
+readarray -t PORTS_TO_SCAN < <(parse_ports "$PORT_RANGE_INPUT")
+TOTAL_PORTS_TO_SCAN=${#PORTS_TO_SCAN[@]}
+
+# Verifica se há portas válidas para escanear.
+if [ "$TOTAL_PORTS_TO_SCAN" -eq 0 ]; then
+    if ! $OUTPUT_JSON; then echo "[!] Nenhuma porta válida para escanear." >&2; fi
+    exit 1
+fi
+TOTAL_PORTS_TO_SCAN_FOR_SUMMARY=$TOTAL_PORTS_TO_SCAN # Armazena para uso no resumo.
+
+# --- Exibir Informações Iniciais ---
+# Exibe informações sobre a varredura que será realizada.
+if ! $OUTPUT_JSON; then
+    echo "[*] Escaneando alvo: $ORIGINAL_TARGET_HOST"
+    if [ "$ORIGINAL_TARGET_HOST" != "$TARGET_IP" ]; then
+        echo "[*] Endereço IP resolvido: $TARGET_IP"
+    fi
     echo "[*] Faixa de portas: $PORT_RANGE_INPUT"
     echo "[*] Método de varredura: $ACTUAL_SCAN_METHOD"
     echo "[*] Timeout por porta: ${TIMEOUT_SECONDS}s, Paralelismo: $PARALLEL_JOBS jobs"
 fi
 
-# Parseia a faixa de portas para uma lista de portas individuais.
-readarray -t PORTS_TO_SCAN < <(parse_ports "$PORT_RANGE_INPUT")
-if [ ${#PORTS_TO_SCAN[@]} -eq 0 ]; then # Se nenhuma porta válida for encontrada.
-    if ! $OUTPUT_JSON; then echo "[!] Nenhuma porta válida para escanear." >&2; fi
-    # Se JSON, a saída vazia de portas no JSON indicará isso. Não sai com erro aqui para permitir JSON vazio.
-    if ! $OUTPUT_JSON; then exit 1; fi 
-fi
-TOTAL_PORTS_TO_SCAN_FOR_SUMMARY=${#PORTS_TO_SCAN[@]}
-
-# Registra o tempo de início da varredura.
+# --- Iniciar Varredura ---
+# Registra o timestamp de início da varredura para cálculo de duração.
 SCAN_START_TIME_NS=$(date +%s%N)
-active_jobs=0      # Contador de jobs ativos.
-CHILD_PIDS=()      # Limpa/reseta o array de PIDs de filhos.
 
-# Loop principal de varredura: itera sobre cada porta e lança um job em background.
-for port_to_scan in "${PORTS_TO_SCAN[@]}"; do
-    # Executa scan_port_job em background.
-    scan_port_job "$IP_FOR_SCANNING" "$port_to_scan" "$TIMEOUT_SECONDS" "$TMP_OPEN_PORTS_FILE" "$OUTPUT_JSON" &
-    CHILD_PIDS+=($!) # Adiciona o PID do último job em background ao array.
-    active_jobs=$((active_jobs + 1))
-    
-    # Se o número de jobs ativos atingir o limite de paralelismo, espera um job terminar.
-    if [ "$active_jobs" -ge "$PARALLEL_JOBS" ]; then
-        # `wait -n` espera pelo próximo job filho terminar. Requer Bash 4.3+.
-        # Se `wait -n` não estiver disponível, uma alternativa mais complexa seria necessária.
-        wait -n 
-        active_jobs=$((active_jobs - 1))
+# Inicializa o array para armazenar as portas abertas encontradas.
+declare -a OPEN_PORTS=()
+
+# Inicializa o contador de jobs em execução.
+RUNNING_JOBS=0
+
+# Itera sobre cada porta a ser escaneada.
+for port in "${PORTS_TO_SCAN[@]}"; do
+    # Verifica se já atingiu o limite de jobs paralelos.
+    if [ "$RUNNING_JOBS" -ge "$PARALLEL_JOBS" ]; then
+        # Espera por um job terminar antes de iniciar o próximo.
+        wait -n
+        RUNNING_JOBS=$((RUNNING_JOBS - 1))
     fi
+    
+    # Inicia um novo job de varredura em background.
+    scan_port_job "$TARGET_IP" "$port" "$TIMEOUT_SECONDS" "$TMP_OPEN_PORTS_FILE" "$OUTPUT_JSON" &
+    
+    # Armazena o PID do job para gerenciamento posterior.
+    CHILD_PID=$!
+    CHILD_PIDS+=("$CHILD_PID")
+    
+    # Incrementa o contador de jobs em execução.
+    RUNNING_JOBS=$((RUNNING_JOBS + 1))
 done
 
-# Espera todos os jobs restantes em background terminarem.
-while [ "$active_jobs" -gt 0 ]; do 
-    wait -n &>/dev/null # Suprime erros se o job já foi morto pelo trap (Ctrl+C).
-    active_jobs=$((active_jobs - 1))
-done
-wait &>/dev/null # Garante que absolutamente todos os filhos terminaram.
+# Espera todos os jobs de varredura terminarem.
+wait
 
-# Desativa o trap de SIGINT/SIGTERM, pois a varredura principal terminou e não queremos mais o handler de interrupção.
-trap - SIGINT SIGTERM
-
-# Registra o tempo de fim da varredura.
-end_time_scan=$(date +%s%N)
-
-# --- Processamento e Exibição dos Resultados ---
-# Lê as portas abertas do arquivo temporário, ordena e remove duplicatas.
-declare -a arr_open_ports_final
+# --- Processar Resultados ---
+# Lê as portas abertas encontradas do arquivo temporário.
 if [ -f "$TMP_OPEN_PORTS_FILE" ] && [ -s "$TMP_OPEN_PORTS_FILE" ]; then
-    readarray -t arr_open_ports_final < <(sort -n "$TMP_OPEN_PORTS_FILE" | uniq)
+    readarray -t OPEN_PORTS < <(sort -n "$TMP_OPEN_PORTS_FILE" | uniq)
 fi
-COUNT_OPEN_PORTS=${#arr_open_ports_final[@]}
 
-# Calcula a duração total da varredura.
-duration_ns=$((end_time_scan - SCAN_START_TIME_NS))
-duration_s_formatted=$(printf "%.1f" $(echo "scale=1; $duration_ns / 1000000000" | bc -l))
+# Calcula o tempo total de varredura.
+SCAN_END_TIME_NS=$(date +%s%N)
+SCAN_DURATION_NS=$((SCAN_END_TIME_NS - SCAN_START_TIME_NS))
+SCAN_DURATION_S_FORMATTED=$(printf "%.1f" $(echo "scale=1; $SCAN_DURATION_NS / 1000000000" | bc -l))
 
-# Formata e exibe a saída final (JSON ou texto).
+# --- Exibir Resultados ---
+# Exibe os resultados da varredura no formato apropriado (texto ou JSON).
 if $OUTPUT_JSON; then
-    json_ports_array=""
-    first_port_in_json=true
-    for p_num in "${arr_open_ports_final[@]}"; do
-        service_name_json=$(get_service_name "$p_num")
-        [ "$first_port_in_json" = true ] && first_port_in_json=false || json_ports_array+=,
-        json_ports_array+="{\"port\":$p_num,\"protocol\":\"tcp\",\"service\":\"$service_name_json\",\"status\":\"open\"}"
-    done
-
-    # Escapa aspas no target e ip para garantir JSON válido.
-    escaped_target_host=$(echo "$ORIGINAL_TARGET_HOST" | sed 
-    s/"/\\\\"/g
-    )
-    escaped_resolved_ip=$(echo "$RESOLVED_IP_FOR_JSON" | sed 
-    s/"/\\\\"/g
-    )
-
+    # Formata os resultados como JSON.
     echo "{"
-    echo "  \"target\": \"$escaped_target_host\","
-    echo "  \"ip\": \"$escaped_resolved_ip\","
-    echo "  \"scan_type\": \"tcp\","
+    echo "  \"target\": \"$ORIGINAL_TARGET_HOST\","
+    if [ "$ORIGINAL_TARGET_HOST" != "$TARGET_IP" ]; then
+        echo "  \"ip\": \"$TARGET_IP\","
+    fi
     echo "  \"scan_method\": \"$ACTUAL_SCAN_METHOD\","
-    echo "  \"ports\": [$json_ports_array],"
-    echo "  \"stats\": {"
-    echo "    \"total_scanned\": $TOTAL_PORTS_TO_SCAN_FOR_SUMMARY,"
-    echo "    \"open_ports\": $COUNT_OPEN_PORTS,"
-    echo "    \"time_elapsed\": \"${duration_s_formatted}s\""
-    echo "  }"
+    echo "  \"port_range\": \"$PORT_RANGE_INPUT\","
+    echo "  \"timeout\": $TIMEOUT_SECONDS,"
+    echo "  \"parallel_jobs\": $PARALLEL_JOBS,"
+    echo "  \"duration_seconds\": $SCAN_DURATION_S_FORMATTED,"
+    echo "  \"total_ports_scanned\": $TOTAL_PORTS_TO_SCAN,"
+    echo "  \"open_ports\": ["
+    
+    # Adiciona cada porta aberta ao JSON.
+    for i in "${!OPEN_PORTS[@]}"; do
+        port=${OPEN_PORTS[$i]}
+        service=$(get_service_name "$port")
+        echo -n "    {\"port\": $port"
+        if [ -n "$service" ]; then
+            echo -n ", \"service\": \"$service\""
+        fi
+        if [ $i -eq $((${#OPEN_PORTS[@]} - 1)) ]; then
+            echo "}"
+        else
+            echo "},"
+        fi
+    done
+    
+    echo "  ]"
     echo "}"
-else # Saída em formato texto.
-    echo "[*] Varredura concluída em ${duration_s_formatted}s"
-    echo "[*] $TOTAL_PORTS_TO_SCAN_FOR_SUMMARY portas escaneadas, $COUNT_OPEN_PORTS abertas."
-    # Se houver portas abertas, exibe um resumo delas.
-    # As portas individuais já foram impressas em tempo real no modo texto.
-    if [ "$COUNT_OPEN_PORTS" -gt 0 ]; then
-        open_ports_summary_text="[*] Portas abertas encontradas:"
-        for p_summary in "${arr_open_ports_final[@]}"; do
-            service_name_summary=$(get_service_name "$p_summary")
-            if [ -n "$service_name_summary" ]; then
-                open_ports_summary_text+=" $p_summary($service_name_summary)"
+else
+    # Exibe um resumo em formato texto.
+    echo ""
+    echo "[*] Varredura concluída em ${SCAN_DURATION_S_FORMATTED}s"
+    echo "[*] Total de portas escaneadas: $TOTAL_PORTS_TO_SCAN"
+    
+    if [ ${#OPEN_PORTS[@]} -eq 0 ]; then
+        echo "[*] Nenhuma porta aberta encontrada."
+    else
+        echo "[*] Portas abertas encontradas: ${#OPEN_PORTS[@]}"
+        for port in "${OPEN_PORTS[@]}"; do
+            service=$(get_service_name "$port")
+            if [ -n "$service" ]; then
+                echo "[+] Porta $port/tcp aberta ($service)"
             else
-                open_ports_summary_text+=" $p_summary"
+                echo "[+] Porta $port/tcp aberta"
             fi
         done
-        echo "$open_ports_summary_text"
     fi
 fi
 
-# A limpeza final do arquivo temporário é feita pelo trap EXIT.
-# rm -f "$TMP_OPEN_PORTS_FILE" # Esta linha é redundante devido ao trap EXIT.
-exit 0 # Saída bem-sucedida.
+# Limpa o arquivo temporário (embora o trap EXIT já faça isso).
+if [ -n "$TMP_OPEN_PORTS_FILE" ] && [ -f "$TMP_OPEN_PORTS_FILE" ]; then
+    rm -f "$TMP_OPEN_PORTS_FILE"
+fi
 
+# Sai com código de sucesso.
+exit 0
