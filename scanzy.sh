@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# port_scanner_final.sh - Scanner de Portas TCP Avançado
+# scanzy.sh - Scanner de Portas TCP Avançado
 # Autor: 404xploit
 # Data: 15 de Maio de 2025
 # Versão: 1.0
