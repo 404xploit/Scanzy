@@ -1,3 +1,0 @@
-"""
-Scanzy GUI Package
-"""
