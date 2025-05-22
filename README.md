@@ -81,7 +81,7 @@ Este projeto está licenciado sob a MIT License. Consulte o arquivo LICENSE para
 
 # 👥 Autores
 
-Desenvolvido com ❤️ por: 404xploit e Miranda-SJ
+Desenvolvido por: 404xploit e Miranda-SJ
 
 https://github.com/404xploit
 
