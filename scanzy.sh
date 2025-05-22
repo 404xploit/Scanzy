@@ -57,7 +57,7 @@ show_help() {
     echo "  --json                Formatar a saída como JSON."
     echo "  --force-netcat        Forçar o uso de netcat (nc) para varredura."
     echo "  -h, --help            Exibir esta mensagem de ajuda."
-    echo "  --gui                 Ativa a interface grafica
+    echo "  --gui                 Ativa a interface grafica"
     echo ""
     echo "Exemplos:"
     echo "  $0 example.com"
