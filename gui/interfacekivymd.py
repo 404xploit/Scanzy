@@ -75,7 +75,7 @@ BASE_DIR = Path(__file__).parent
 SCANZY_SCRIPT = BASE_DIR / "scanzy.sh"
 
 # Registro da fonte personalizada
-LabelBase.register(name='BebasNeue', fn_regular='BebasNeue-Regular.ttf')
+#LabelBase.register(name='BebasNeue', fn_regular='BebasNeue-Regular.ttf')
 
 # KV Language - Definição da interface gráfica
 KV = '''
