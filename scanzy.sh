@@ -23,7 +23,7 @@
 # 9. Validação robusta de parâmetros de entrada.
 
 # --- Configurações Padrão ---
-DEFAULT_PORT_RANGE="1-1024"       # Faixa de portas padrão se nenhuma for especificada.
+DEFAULT_PORT_RANGE="1-65535"       # Faixa de portas padrão se nenhuma for especificada.
 DEFAULT_TIMEOUT_SECONDS=1       # Timeout padrão por porta em segundos.
 DEFAULT_PARALLEL_JOBS=10        # Número padrão de jobs paralelos.
 OUTPUT_JSON=false               # Flag para controlar a saída JSON. Inicialmente falso.
