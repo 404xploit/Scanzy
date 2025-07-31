@@ -4,7 +4,7 @@ Uma ferramenta poderosa para varredura de portas TCP, construída em **Bash** co
 
 ---
 
-## 🧠 Sobre o Projeto
+##  Sobre o Projeto
 
 Este projeto tem como objetivo combinar a robustez de um scanner TCP em shell script com a praticidade de uma interface visual moderna. Ideal para entusiastas de redes, profissionais de segurança ou qualquer pessoa que precise identificar portas abertas de forma eficiente.
 
@@ -12,7 +12,7 @@ A interface gráfica foi desenvolvida em Python utilizando **PyQt5** (ou **Tkint
 
 ---
 
-## 🚀 Funcionalidades
+##  Funcionalidades
 
 ✅ Escaneamento TCP via `/dev/tcp` (Bash) ou fallback com `netcat (nc)`  
 ✅ Faixas de portas customizáveis (ex: `1-1024`, `22-25`)  
@@ -26,7 +26,7 @@ A interface gráfica foi desenvolvida em Python utilizando **PyQt5** (ou **Tkint
 
 ---
 
-## 🖥️ Uso via Terminal (Modo CLI)
+##  Uso via Terminal (Modo CLI)
 
 ```bash
 chmod +x scanzy.sh
@@ -37,7 +37,7 @@ chmod +x scanzy.sh
 ./scanzy.sh example.com 1-1024 --json
 ```
 
-## 🖱️ Uso com Interface Gráfica (Modo GUI)
+##  Uso com Interface Gráfica (Modo GUI)
 
 ```bash
 # Pré-requisitos:
@@ -48,7 +48,7 @@ pip3 install -r requirements.txt
 ./scanzy.sh --gui
 ```
 
-## ⚙️ Instalação Rápida
+##  Instalação Rápida
 
 ```bash
 ./setup.sh
@@ -57,7 +57,7 @@ pip3 install -r requirements.txt
 Esse comando instala todas as dependências e prepara o ambiente automaticamente.
 
   
-## 🐧 Sistemas Compatíveis
+##  Sistemas Compatíveis
 
 <div align="center">
 
@@ -74,7 +74,7 @@ Esse comando instala todas as dependências e prepara o ambiente automaticamente
 
 </div>
 
-## 📜 Licença
+##  Licença
 
 Este projeto está licenciado sob a MIT License. Consulte o arquivo LICENSE para mais informações.
 
