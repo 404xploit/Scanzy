@@ -5,7 +5,7 @@
 # Atualizado: 31/07/2025
 # Foco: Recon, fingerprint, automação, evasão básica.
 
-DEFAULT_PORT_RANGE="1-1024"
+DEFAULT_PORT_RANGE="1-9999"
 DEFAULT_TIMEOUT_SECONDS=1
 DEFAULT_PARALLEL_JOBS=12
 DEFAULT_DELAY_MS=50      # Delay random entre scans (stealth)
